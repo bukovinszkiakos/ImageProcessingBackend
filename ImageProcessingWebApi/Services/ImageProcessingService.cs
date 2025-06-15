@@ -1,6 +1,9 @@
 ﻿using ImageProcessingWebApi.Models;
 using Microsoft.AspNetCore.Mvc;
 using System.Text;
+using ImageProcessingNative;
+using System.Diagnostics;
+
 
 namespace ImageProcessingWebApi.Services
 {
@@ -13,13 +16,16 @@ namespace ImageProcessingWebApi.Services
         {
             try
             {
-                // Decode base64 string to image bytes
-                byte[] imageBytes = Convert.FromBase64String(request.ImageBase64);
+                // Decode base64 string to raw image bytes
+                byte[] inputBytes = Convert.FromBase64String(request.ImageBase64);
 
-                // Create stream from bytes
-                var stream = new MemoryStream(imageBytes);
+                // Pass to C++/CLI processor (mock blur for now)
+                byte[] processedBytes = Processor.MockBlur(inputBytes, request.OutputEncoding == EncodingType.PNG);
 
-                // Determine MIME type from output encoding
+                // Create memory stream from result
+                var stream = new MemoryStream(processedBytes);
+
+                // Set MIME type
                 var contentType = request.OutputEncoding == EncodingType.PNG ? "image/png" : "image/jpeg";
 
                 return new FileStreamResult(stream, contentType)
