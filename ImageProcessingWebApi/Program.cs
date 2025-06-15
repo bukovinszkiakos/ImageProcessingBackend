@@ -1,3 +1,7 @@
+using ImageProcessingWebApi.Services;
+using Microsoft.OpenApi.Any;
+using Microsoft.OpenApi.Models;
+using System.Text.Json.Serialization;
 
 namespace ImageProcessingWebApi
 {
@@ -7,16 +11,41 @@ namespace ImageProcessingWebApi
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            // Add services to the container.
+            // Add controllers and configure JSON options to serialize enums as strings.
+            builder.Services.AddControllers()
+                .AddJsonOptions(options =>
+                {
+                    // Ensures that enums like EncodingType are serialized/deserialized as strings (e.g., "PNG")
+                    options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+                });
 
-            builder.Services.AddControllers();
-            // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+            // Register the image processing service
+            builder.Services.AddScoped<IImageProcessingService, ImageProcessingService>();
+
+            // Enable Swagger and API endpoint discovery
             builder.Services.AddEndpointsApiExplorer();
-            builder.Services.AddSwaggerGen();
+
+            // Configure Swagger to show enums as strings and map EncodingType manually
+            builder.Services.AddSwaggerGen(options =>
+            {
+                options.SupportNonNullableReferenceTypes(); 
+                options.UseInlineDefinitionsForEnums(); 
+
+                // Manually define string values for the EncodingType enum
+                options.MapType<Models.EncodingType>(() => new OpenApiSchema
+                {
+                    Type = "string",
+                    Enum = new List<IOpenApiAny>
+                    {
+                        new OpenApiString("PNG"),
+                        new OpenApiString("JPG")
+                    }
+                });
+            });
 
             var app = builder.Build();
 
-            // Configure the HTTP request pipeline.
+            // Enable Swagger UI only in Development
             if (app.Environment.IsDevelopment())
             {
                 app.UseSwagger();
@@ -24,12 +53,8 @@ namespace ImageProcessingWebApi
             }
 
             app.UseHttpsRedirection();
-
             app.UseAuthorization();
-
-
             app.MapControllers();
-
             app.Run();
         }
     }
