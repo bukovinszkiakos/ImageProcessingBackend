@@ -5,24 +5,35 @@ using System.Text;
 namespace ImageProcessingWebApi.Services
 {
     /// <summary>
-    /// Mock implementation of the image processing service.
+    /// Service that processes base64 image data into an actual image file stream.
     /// </summary>
     public class ImageProcessingService : IImageProcessingService
     {
         public async Task<FileStreamResult> ProcessImageAsync(ImageProcessingRequest request, CancellationToken cancellationToken)
         {
-            // Mock response: returns dummy image bytes (not real image yet)
-            var imageBytes = Encoding.UTF8.GetBytes("Mock image content"); //Egy "Mock image content" szöveget byte-tömbbé alakítunk UTF-8 kódolással
-
-            //Ez úgy tesz, mintha egy képet kaptunk volna, de valójában csak próbáljuk a képfájl visszaküldését
-
-            var stream = new MemoryStream(imageBytes);
-            var contentType = request.OutputEncoding == EncodingType.PNG ? "image/png" : "image/jpeg";
-
-            return new FileStreamResult(stream, contentType)
+            try
             {
-                FileDownloadName = $"processed.{request.OutputEncoding.ToString().ToLower()}"
-            };
+                // Decode base64 string to image bytes
+                byte[] imageBytes = Convert.FromBase64String(request.ImageBase64);
+
+                // Create stream from bytes
+                var stream = new MemoryStream(imageBytes);
+
+                // Determine MIME type from output encoding
+                var contentType = request.OutputEncoding == EncodingType.PNG ? "image/png" : "image/jpeg";
+
+                return new FileStreamResult(stream, contentType)
+                {
+                    FileDownloadName = $"processed.{request.OutputEncoding.ToString().ToLower()}"
+                };
+            }
+            catch (FormatException)
+            {
+                return new FileStreamResult(new MemoryStream(), "text/plain")
+                {
+                    FileDownloadName = "error.txt"
+                };
+            }
         }
     }
 }
