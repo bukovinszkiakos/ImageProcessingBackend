@@ -11,6 +11,11 @@ namespace ImageProcessingWebApi
         {
             var builder = WebApplication.CreateBuilder(args);
 
+            builder.WebHost.ConfigureKestrel(options =>
+            {
+                options.Limits.MaxRequestBodySize = 50 * 1024 * 1024; // 50 MB
+            });
+
             // Add controllers and configure JSON options to serialize enums as strings.
             builder.Services.AddControllers()
                 .AddJsonOptions(options =>

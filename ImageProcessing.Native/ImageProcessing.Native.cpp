@@ -1,3 +1,4 @@
+#define IServiceProvider WIN32_IServiceProvider 
 #include "pch.h"
 #include "ImageProcessing.Native.h"
 
