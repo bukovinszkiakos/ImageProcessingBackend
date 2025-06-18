@@ -11,9 +11,10 @@ namespace ImageProcessingWebApi
         {
             var builder = WebApplication.CreateBuilder(args);
 
+            // Allow processing of large base64 image requests up to 50MB
             builder.WebHost.ConfigureKestrel(options =>
             {
-                options.Limits.MaxRequestBodySize = 50 * 1024 * 1024; // 50 MB
+                options.Limits.MaxRequestBodySize = 50 * 1024 * 1024; 
             });
 
             // Add controllers and configure JSON options to serialize enums as strings.
@@ -30,22 +31,13 @@ namespace ImageProcessingWebApi
             // Enable Swagger and API endpoint discovery
             builder.Services.AddEndpointsApiExplorer();
 
-            // Configure Swagger to show enums as strings and map EncodingType manually
+            // Configure Swagger generation and support for non-nullable reference types
             builder.Services.AddSwaggerGen(options =>
             {
-                options.SupportNonNullableReferenceTypes(); 
-                options.UseInlineDefinitionsForEnums(); 
+                options.SupportNonNullableReferenceTypes();
 
-                // Manually define string values for the EncodingType enum
-                options.MapType<Models.EncodingType>(() => new OpenApiSchema
-                {
-                    Type = "string",
-                    Enum = new List<IOpenApiAny>
-                    {
-                        new OpenApiString("PNG"),
-                        new OpenApiString("JPG")
-                    }
-                });
+                // Ensures enums like EncodingType appear as inline dropdowns in Swagger UI
+                options.UseInlineDefinitionsForEnums(); 
             });
 
             var app = builder.Build();

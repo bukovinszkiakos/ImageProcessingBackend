@@ -23,7 +23,7 @@ namespace ImageProcessingWebApi.Controllers
         }
 
         /// <summary>
-        /// Processes a base64 image using Gaussian blur (mock).
+        /// Processes a base64-encoded image using multithreaded Gaussian blur.
         /// </summary>
         /// <param name="request">Image data and desired output format.</param>
         /// <param name="cancellationToken">Async cancellation support.</param>
@@ -36,8 +36,20 @@ namespace ImageProcessingWebApi.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var result = await _service.ProcessImageAsync(request, cancellationToken);
-            return result;
+            try
+            {
+                var result = await _service.ProcessImageAsync(request, cancellationToken);
+                return result;
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (ApplicationException ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
         }
     }
+
 }
