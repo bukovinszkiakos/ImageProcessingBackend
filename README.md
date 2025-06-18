@@ -107,8 +107,8 @@ The native image processing logic is implemented in C++/CLI using OpenCV. Proces
 
 * `Controllers/ImageProcessingController.cs` — API routing and response logic
 * `Services/ImageProcessingService.cs` — Decoding, validation, cancellation support, native interop
-* `ImageProcessing.Native/Processor.cpp` — C++/CLI class for native entry point
-* `ImageProcessing.Native/ParallelGaussianBlur.cpp` — Implements multithreaded blur logic
+* `ImageProcessing.Native/ImageProcessing.Native.h` — C++/CLI class declaration (Processor)
+* `ImageProcessing.Native/ImageProcessing.Native.cpp` — C++/CLI implementation with OpenCV and multithreaded Gaussian blur
 
 ---
 
@@ -120,7 +120,6 @@ The native image processing logic is implemented in C++/CLI using OpenCV. Proces
 * Clean cancellation handling using `CancellationToken`
 * Safe exception propagation from native to managed code
 * No hardcoded paths, secrets, or dependencies
-* Git history follows clean, atomic commits with descriptive English messages
 
 ---
 
