@@ -20,25 +20,25 @@ namespace ImageProcessingNative {
         if (numThreads <= 0) numThreads = 4;
 
         int height = inputImage.rows;
-        int segmentHeight = height / numThreads; //1 szál hány sort fog csinálni
+        int segmentHeight = height / numThreads; 
 
-        std::vector<cv::Mat> segments(numThreads); //elõre lefoglalja...(reserve)
+        std::vector<cv::Mat> segments(numThreads); 
         std::vector<cv::Mat> blurredSegments(numThreads);
         std::vector<std::thread> workers;
 
         for (int i = 0; i < numThreads; ++i)
         {
-            int startY = i * segmentHeight; //szál sor kezdõpontja. ha height = 64 és numThreads = 8 akkor elsõ szál 0-7 kövi 8-15
-            int endY = (i == numThreads - 1) ? height : (i + 1) * segmentHeight; //utolsónak lehet kevesebb jut
-            cv::Rect roi(0, startY, inputImage.cols, endY - startY); //  konstruktor:  Rect_(_Tp _x, _Tp _y, _Tp _width, _Tp _height);
-            segments[i] = inputImage(roi).clone(); //vektor 1 be 1 csíkot 1 szálat belerak.
+            int startY = i * segmentHeight; 
+            int endY = (i == numThreads - 1) ? height : (i + 1) * segmentHeight; 
+            cv::Rect roi(0, startY, inputImage.cols, endY - startY); 
+            segments[i] = inputImage(roi).clone(); 
 
-            workers.emplace_back([&, i, blurSize]() { //& = refként capturálja, utána másolja i-t for-ból, + blurSizét is másolja. Threadnek átadja miket lásson. ez a captured list. ()  == empty nem kap argot.
-                cv::GaussianBlur(segments[i], blurredSegments[i], cv::Size(blurSize, blurSize), 0); //ez fut az új szálon.
+            workers.emplace_back([&, i, blurSize]() {
+                cv::GaussianBlur(segments[i], blurredSegments[i], cv::Size(blurSize, blurSize), 0); 
                 });
         }
 
-        for (auto& t : workers) //végig megy reffel az összes workeren, és megnézi h, a thread joinable-e, olyan státuszba van e h lehet e rá várni, ha igen akk vár rá,  tehát megvárja mint async await kb az összes szálat
+        for (auto& t : workers) 
         {
             if (t.joinable()) t.join();
         }
